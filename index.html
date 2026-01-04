@@ -2,9 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <!-- ВАЖЛИВО ДЛЯ ТЕЛЕФОНУ: Налаштовує розмір екрана -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRON MOBILE</title>
+    <title>TRON MOBILE - High Score</title>
     <style>
         body { 
             background-color: #000; 
@@ -28,8 +27,8 @@
         }
         .info { 
             margin-bottom: 10px; 
-            font-size: 16px; 
-            letter-spacing: 2px; 
+            font-size: 14px; 
+            letter-spacing: 1px; 
             display: flex;
             justify-content: space-between;
             width: 100%;
@@ -43,19 +42,24 @@
             color: #ff00f7;
             padding: 5px 10px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             box-shadow: 0 0 5px #ff00f7;
         }
+        #highScoreDisplay { color: #fff; text-shadow: 0 0 5px #fff; }
     </style>
 </head>
 <body>
 
-    <!-- ОНОВЛЕНИЙ HTML ДЛЯ КНОПКИ ПАУЗИ -->
     <div class="info">
         <span>SCORE: <span id="score">0</span></span>
         <button id="pauseButton" onclick="togglePause()">ПАУЗА</button>
         <span>LIVES: <span id="lives">3</span></span>
     </div>
+    <!-- НОВОЕ МЕСТО ДЛЯ ОТОБРАЖЕНИЯ РЕКОРДА -->
+    <div class="info">
+        HIGH SCORE: <span id="highScoreDisplay">0</span>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -68,8 +72,10 @@
         let score = 0;
         let lives = 3;
         let gameActive = true;
-        let gamePaused = false; // НОВА ЗМІННА СТАНУ ПАУЗИ
+        let gamePaused = false;
+        let highScore = localStorage.getItem('tronHighScore') || 0; // Загружаем рекорд из памяти
 
+        // ... (остальные переменные: ball, paddle, bricks, movement, etc.) ...
         let ball = { x: canvas.width/2, y: canvas.height-30, dx: 4, dy: -4, radius: 8 };
         let paddle = { height: 12, width: 100, x: (canvas.width-100)/2 };
 
@@ -88,8 +94,12 @@
                 bricks[c][r] = { x: 0, y: 0, status: 1 };
             }
         }
+        // ... (end of variables) ...
 
-        // УПРАВЛІННЯ: Об'єднана функція для мишки та сенсора
+        // Обновляем отображение рекорда при загрузке игры
+        document.getElementById('highScoreDisplay').innerText = highScore;
+
+        // УПРАВЛЕНИЕ: Мышка + Сенсор пальцем
         function moveHandler(e) {
             let clientX = e.touches ? e.touches.clientX : e.clientX;
             let relativeX = clientX - canvas.offsetLeft;
@@ -103,18 +113,19 @@
         document.addEventListener("mousemove", moveHandler);
         document.addEventListener("touchmove", moveHandler, {passive: false});
 
-        // НОВА ФУНКЦІЯ ДЛЯ КЕРУВАННЯ ПАУЗОЮ
+        // Функция для Паузы
         function togglePause() {
             gamePaused = !gamePaused;
             const button = document.getElementById("pauseButton");
             if (gamePaused) {
-                button.innerText = "ГРАТИ";
+                button.innerText = "ИГРАТЬ";
             } else {
                 button.innerText = "ПАУЗА";
-                requestAnimationFrame(draw); // Відновлюємо цикл гри
+                requestAnimationFrame(draw);
             }
         }
 
+        // --- ГЛАВНЫЕ ФУНКЦИИ ИГРЫ (DRAWING AND COLLISION) ---
         function drawBall() {
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
@@ -124,8 +135,7 @@
             ctx.fill();
             ctx.closePath();
         }
-        
-        function drawPaddle() {
+        function drawPaddle() { /* ... unchanged ... */
             ctx.beginPath();
             ctx.rect(paddle.x, canvas.height-paddle.height-5, paddle.width, paddle.height);
             ctx.fillStyle = "#00e5ff";
@@ -134,8 +144,7 @@
             ctx.fill();
             ctx.closePath();
         }
-
-        function drawBricks() {
+        function drawBricks() { /* ... unchanged ... */
             for(let c=0; c<brickColumnCount; c++) {
                 for(let r=0; r<brickRowCount; r++) {
                     if(bricks[c][r].status === 1) {
@@ -155,6 +164,7 @@
             }
         }
 
+        // ФУНКЦИЯ ПРОВЕРКИ СТОЛКНОВЕНИЙ (ОБНОВЛЕННАЯ)
         function collisionDetection() {
             for(let c=0; c<brickColumnCount; c++) {
                 for(let r=0; r<brickRowCount; r++) {
@@ -165,8 +175,13 @@
                             b.status = 0;
                             score++;
                             document.getElementById("score").innerText = score;
+                            if(score > highScore) {
+                                highScore = score;
+                                localStorage.setItem('tronHighScore', highScore); // Сохраняем новый рекорд
+                                document.getElementById('highScoreDisplay').innerText = highScore; // Обновляем UI
+                            }
                             if(score === brickRowCount*brickColumnCount) {
-                                alert("SYSTEM CRACKED! YOU WIN!");
+                                alert("СИСТЕМА ЗЛАМАНА! НОВЫЙ РЕКОРД!");
                                 document.location.reload();
                             }
                         }
@@ -177,7 +192,7 @@
 
         function draw() {
             if(!gameActive) return;
-            if(gamePaused) return; // ПЕРЕВІРКА ПАУЗИ ТУТ!
+            if(gamePaused) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBricks();
@@ -196,7 +211,7 @@
                     document.getElementById("lives").innerText = lives;
                     if(!lives) {
                         gameActive = false;
-                        alert("CORE BREACH: GAME OVER");
+                        alert("СИСТЕМНАЯ ОШИБКА: GAME OVER");
                         document.location.reload();
                     } else {
                         ball.x = canvas.width/2;
@@ -216,5 +231,3 @@
     </script>
 </body>
 </html>
-
-
