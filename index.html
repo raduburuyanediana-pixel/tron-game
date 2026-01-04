@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <!-- 1. ВАЖЛИВО ДЛЯ ТЕЛЕФОНУ: Налаштовує розмір екрана -->
+    <!-- ВАЖЛИВО ДЛЯ ТЕЛЕФОНУ: Налаштовує розмір екрана -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TRON MOBILE</title>
     <style>
@@ -16,8 +16,7 @@
             height: 100vh; 
             color: #00e5ff; 
             font-family: 'Courier New', monospace; 
-            overflow: hidden; /* Ховаємо скролл */
-            /* 2. ВАЖЛИВО ДЛЯ ТЕЛЕФОНУ: Забороняємо прокрутку сторінки пальцем */
+            overflow: hidden; 
             touch-action: none; 
         }
         canvas { 
@@ -27,25 +26,49 @@
             max-width: 95vw; 
             max-height: 70vh;
         }
-        .info { margin-bottom: 10px; font-size: 16px; letter-spacing: 2px; }
+        .info { 
+            margin-bottom: 10px; 
+            font-size: 16px; 
+            letter-spacing: 2px; 
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        button#pauseButton {
+            background: transparent;
+            border: 1px solid #ff00f7;
+            color: #ff00f7;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 0 5px #ff00f7;
+        }
     </style>
 </head>
 <body>
 
-    <div class="info">SCORE: <span id="score">0</span> | LIVES: <span id="lives">3</span></div>
+    <!-- ОНОВЛЕНИЙ HTML ДЛЯ КНОПКИ ПАУЗИ -->
+    <div class="info">
+        <span>SCORE: <span id="score">0</span></span>
+        <button id="pauseButton" onclick="togglePause()">ПАУЗА</button>
+        <span>LIVES: <span id="lives">3</span></span>
+    </div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Підлаштовуємо розмір холста під екран
         canvas.width = window.innerWidth > 600 ? 600 : window.innerWidth - 20;
         canvas.height = 400;
 
         let score = 0;
         let lives = 3;
         let gameActive = true;
+        let gamePaused = false; // НОВА ЗМІННА СТАНУ ПАУЗИ
 
         let ball = { x: canvas.width/2, y: canvas.height-30, dx: 4, dy: -4, radius: 8 };
         let paddle = { height: 12, width: 100, x: (canvas.width-100)/2 };
@@ -74,12 +97,23 @@
             if(relativeX > 0 && relativeX < canvas.width) {
                 paddle.x = relativeX - paddle.width/2;
             }
-            if (e.cancelable) e.preventDefault(); // Запобігаємо прокрутці
+            if (e.cancelable) e.preventDefault(); 
         }
 
         document.addEventListener("mousemove", moveHandler);
-        // 3. ВАЖЛИВО ДЛЯ ТЕЛЕФОНУ: Додаємо слухач сенсора з {passive: false}
         document.addEventListener("touchmove", moveHandler, {passive: false});
+
+        // НОВА ФУНКЦІЯ ДЛЯ КЕРУВАННЯ ПАУЗОЮ
+        function togglePause() {
+            gamePaused = !gamePaused;
+            const button = document.getElementById("pauseButton");
+            if (gamePaused) {
+                button.innerText = "ГРАТИ";
+            } else {
+                button.innerText = "ПАУЗА";
+                requestAnimationFrame(draw); // Відновлюємо цикл гри
+            }
+        }
 
         function drawBall() {
             ctx.beginPath();
@@ -143,6 +177,8 @@
 
         function draw() {
             if(!gameActive) return;
+            if(gamePaused) return; // ПЕРЕВІРКА ПАУЗИ ТУТ!
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBricks();
             drawBall();
@@ -173,11 +209,12 @@
 
             ball.x += ball.dx;
             ball.y += ball.dy;
-            requestAnimationFrame(draw);
+            requestAnimationFrame(draw); 
         }
 
         draw(); 
     </script>
 </body>
 </html>
+
 
