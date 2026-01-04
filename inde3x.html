@@ -68,7 +68,7 @@
 
         // УПРАВЛІННЯ: Об'єднана функція для мишки та сенсора
         function moveHandler(e) {
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            let clientX = e.touches ? e.touches.clientX : e.clientX;
             let relativeX = clientX - canvas.offsetLeft;
             
             if(relativeX > 0 && relativeX < canvas.width) {
@@ -90,7 +90,7 @@
             ctx.fill();
             ctx.closePath();
         }
-        // ... (інші функції drawPaddle, drawBricks, collisionDetection, draw залишаються незмінними, як раніше) ...
+        
         function drawPaddle() {
             ctx.beginPath();
             ctx.rect(paddle.x, canvas.height-paddle.height-5, paddle.width, paddle.height);
@@ -180,3 +180,4 @@
     </script>
 </body>
 </html>
+
